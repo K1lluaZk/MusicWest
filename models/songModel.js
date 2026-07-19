@@ -43,7 +43,6 @@ function initDatabase() {
 
 
 /**
- * Inserta una nueva canción en la base de datos.
  * @param {Object} song { title, artist, album, genre, duration }
  * @returns {Promise<number>} ID de la canción insertada
  */
