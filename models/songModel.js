@@ -126,6 +126,21 @@ function updateSong(id, song) {
 }
 
 /**
+ * Elimina una canción por su ID.
+ * @param {number} id
+ * @returns {Promise<number>} Número de filas afectadas
+ */
+function deleteSong(id) {
+  return new Promise((resolve, reject) => {
+    const sql = `DELETE FROM songs WHERE id = ?`;
+    db.run(sql, [id], function (err) {
+      if (err) return reject(err);
+      resolve(this.changes);
+    });
+  });
+}
+
+/**
  * Cambia el estado de favorito (toggle) de una canción.
  * @param {number} id
  * @returns {Promise<number>} Número de filas afectadas
@@ -206,6 +221,7 @@ module.exports = {
   getSongById,
   createSong,
   updateSong,
+  deleteSong,
   toggleFavorite,
   searchSongs,
   getFavoriteSongs,
