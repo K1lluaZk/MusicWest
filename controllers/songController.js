@@ -140,6 +140,23 @@ exports.updateSong = async (req, res) => {
   }
 };
 
+exports.deleteSong = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const changes = await songModel.deleteSong(id);
+
+    if (changes === 0) {
+      return res.redirect('/songs?error=' + encodeURIComponent('No se encontró la canción a eliminar.'));
+    }
+
+    res.redirect('/songs?success=' + encodeURIComponent('Canción eliminada correctamente.'));
+  } catch (err) {
+    console.error('❌ Error al eliminar la canción:', err.message);
+    res.redirect('/songs?error=' + encodeURIComponent('Ocurrió un error al eliminar la canción.'));
+  }
+};
+
 exports.searchSongs = async (req, res) => {
   const query = (req.query.q || '').trim();
 
@@ -186,6 +203,7 @@ exports.toggleFavorite = async (req, res) => {
       return res.redirect('/songs?error=' + encodeURIComponent('No se encontró la canción.'));
     }
 
+    // Vuelve a la página desde donde se hizo la petición (listado, búsqueda o favoritos)
     const referer = req.get('Referer') || '/songs';
     res.redirect(referer);
   } catch (err) {
