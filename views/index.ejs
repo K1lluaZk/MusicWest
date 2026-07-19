@@ -1,0 +1,147 @@
+<!-- ==================================================================
+     views/index.ejs
+     Vista principal: estadísticas, mensajes, tabla de canciones.
+     Se usa tanto para el listado completo, como para resultados de
+     búsqueda y para el listado de favoritas (mismo layout, distintos
+     datos según lo que envíe el controlador).
+================================================================== -->
+
+<!-- ============================================================
+     MENSAJES DE ÉXITO / ERROR
+============================================================ -->
+<% if (typeof success !== 'undefined' && success) { %>
+  <div class="alert alert-success alert-dismissible fade show" role="alert">
+    <i class="bi bi-check-circle-fill me-2"></i><%= success %>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+  </div>
+<% } %>
+
+<% if (typeof error !== 'undefined' && error) { %>
+  <div class="alert alert-danger alert-dismissible fade show" role="alert">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i><%= error %>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+  </div>
+<% } %>
+
+<!-- ============================================================
+     ENCABEZADO DE SECCIÓN (cambia según el contexto)
+============================================================ -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2 class="mb-0">
+    <% if (typeof onlyFavorites !== 'undefined' && onlyFavorites) { %>
+      <i class="bi bi-star-fill text-warning me-2"></i>Canciones favoritas
+    <% } else if (typeof searchQuery !== 'undefined' && searchQuery) { %>
+      <i class="bi bi-search me-2"></i>Resultados para "<%= searchQuery %>"
+    <% } else { %>
+      <i class="bi bi-collection-play me-2"></i>Mi biblioteca musical
+    <% } %>
+  </h2>
+
+  <% if ((typeof onlyFavorites !== 'undefined' && onlyFavorites) || (typeof searchQuery !== 'undefined' && searchQuery)) { %>
+    <a href="/songs" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-arrow-left me-1"></i>Ver todas
+    </a>
+  <% } %>
+</div>
+
+<!-- ============================================================
+     CARDS DE ESTADÍSTICAS
+============================================================ -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="card text-center border-0 shadow-sm stat-card">
+      <div class="card-body">
+        <i class="bi bi-music-note-list fs-2 text-primary"></i>
+        <h3 class="mt-2 mb-0"><%= stats.total %></h3>
+        <small class="text-muted">Canciones</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card text-center border-0 shadow-sm stat-card">
+      <div class="card-body">
+        <i class="bi bi-person-lines-fill fs-2 text-success"></i>
+        <h3 class="mt-2 mb-0"><%= stats.artists %></h3>
+        <small class="text-muted">Artistas</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card text-center border-0 shadow-sm stat-card">
+      <div class="card-body">
+        <i class="bi bi-vinyl-fill fs-2 text-info"></i>
+        <h3 class="mt-2 mb-0"><%= stats.albums %></h3>
+        <small class="text-muted">Álbumes</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card text-center border-0 shadow-sm stat-card">
+      <div class="card-body">
+        <i class="bi bi-star-fill fs-2 text-warning"></i>
+        <h3 class="mt-2 mb-0"><%= stats.favorites %></h3>
+        <small class="text-muted">Favoritas</small>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     TABLA DE CANCIONES
+============================================================ -->
+<% if (songs && songs.length > 0) { %>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle bg-white shadow-sm rounded">
+      <thead class="table-dark">
+        <tr>
+          <th>Título</th>
+          <th>Artista</th>
+          <th>Álbum</th>
+          <th>Género</th>
+          <th>Duración</th>
+          <th class="text-center">Favorito</th>
+          <th class="text-center">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% songs.forEach(song => { %>
+          <tr>
+            <td class="fw-semibold"><%= song.title %></td>
+            <td><%= song.artist %></td>
+            <td><%= song.album || '—' %></td>
+            <td>
+              <% if (song.genre) { %>
+                <span class="badge rounded-pill text-bg-secondary"><%= song.genre %></span>
+              <% } else { %>
+                —
+              <% } %>
+            </td>
+            <td><%= song.duration || '—' %></td>
+            <td class="text-center">
+              <a href="/songs/toggleFavorite/<%= song.id %>" class="favorite-toggle" title="Marcar/Desmarcar favorito">
+                <i class="bi <%= song.favorite ? 'bi-star-fill text-warning' : 'bi-star text-muted' %> fs-5"></i>
+              </a>
+            </td>
+            <td class="text-center">
+              <a href="/songs/edit/<%= song.id %>" class="btn btn-sm btn-outline-primary me-1" title="Editar">
+                <i class="bi bi-pencil-square"></i>
+              </a>
+               <a href="/songs/delete/<%= song.id %>"class="btn btn-sm btn-outline-danger btn-delete"title="Eliminar"
+                data-song-title="<%= song.title %>">
+                <i class="bi bi-trash3"></i>
+              </a>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+<% } else { %>
+  <div class="text-center py-5 text-muted">
+    <i class="bi bi-inboxes fs-1 d-block mb-3"></i>
+    <p class="mb-3">No hay canciones para mostrar.</p>
+    <a href="/songs/new" class="btn btn-primary">
+      <i class="bi bi-plus-lg me-1"></i>Agregar tu primera canción
+    </a>
+  </div>
+<% } %>
