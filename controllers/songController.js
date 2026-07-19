@@ -1,7 +1,6 @@
 const songModel = require('../models/songModel');
 
 /**
- * Helper: valida los datos de una canción.
  * @param {Object} data { title, artist }
  * @returns {Array<string>} Lista de mensajes de error (vacía si es válido)
  */
@@ -86,6 +85,62 @@ exports.createSong = async (req, res) => {
       error: 'Ocurrió un error al guardar la canción. Intenta nuevamente.',
       formData: { title, artist, album, genre, duration }
     });
+  }
+};
+
+exports.searchSongs = async (req, res) => {
+  const query = (req.query.q || '').trim();
+
+  try {
+    const songs = query === ''
+      ? await songModel.getAllSongs()
+      : await songModel.searchSongs(query);
+
+    await renderIndexWithSongs(res, {
+      songs,
+      searchQuery: query,
+      error: query !== '' && songs.length === 0
+        ? 'No se encontraron canciones que coincidan con tu búsqueda.'
+        : null
+    });
+  } catch (err) {
+    console.error('❌ Error al buscar canciones:', err.message);
+    res.status(500).send('Error interno del servidor al buscar canciones.');
+  }
+};
+
+
+exports.favoriteSongs = async (req, res) => {
+  try {
+    const songs = await songModel.getFavoriteSongs();
+
+    await renderIndexWithSongs(res, {
+      songs,
+      onlyFavorites: true,
+      error: songs.length === 0 ? 'Aún no tienes canciones marcadas como favoritas.' : null
+    });
+  } catch (err) {
+    console.error('❌ Error al obtener favoritas:', err.message);
+    res.status(500).send('Error interno del servidor al obtener favoritas.');
+  }
+};
+
+
+exports.toggleFavorite = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const changes = await songModel.toggleFavorite(id);
+
+    if (changes === 0) {
+      return res.redirect('/songs?error=' + encodeURIComponent('No se encontró la canción.'));
+    }
+
+    const referer = req.get('Referer') || '/songs';
+    res.redirect(referer);
+  } catch (err) {
+    console.error('❌ Error al actualizar favorito:', err.message);
+    res.redirect('/songs?error=' + encodeURIComponent('Ocurrió un error al actualizar el favorito.'));
   }
 };
 
