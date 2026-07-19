@@ -1,7 +1,6 @@
 const songModel = require('../models/songModel');
 
 /**
- * Helper: valida los datos de una canción.
  * @param {Object} data { title, artist }
  * @returns {Array<string>} Lista de mensajes de error (vacía si es válido)
  */
@@ -54,7 +53,7 @@ exports.listSongs = async (req, res) => {
     success: req.query.success || null,
     error: req.query.error || null
   });
-};
+};origin/qa
 
 exports.newSongForm = (req, res) => {
   res.render('create', {
