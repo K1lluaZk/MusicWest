@@ -16,5 +16,6 @@ router.get('/songs/toggleFavorite/:id', songController.toggleFavorite);
 router.get('/songs/edit/:id', songController.editSongForm);
 router.post('/songs/update/:id', songController.updateSong);
 
+router.get('/songs/delete/:id', songController.deleteSong);
 
 module.exports = router;
