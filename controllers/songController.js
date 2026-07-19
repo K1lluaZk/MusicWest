@@ -143,3 +143,4 @@ exports.toggleFavorite = async (req, res) => {
     res.redirect('/songs?error=' + encodeURIComponent('Ocurrió un error al actualizar el favorito.'));
   }
 };
+
