@@ -88,6 +88,58 @@ exports.createSong = async (req, res) => {
   }
 };
 
+exports.editSongForm = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const song = await songModel.getSongById(id);
+
+    if (!song) {
+      return res.redirect('/songs?error=' + encodeURIComponent('La canción solicitada no existe.'));
+    }
+
+    res.render('edit', {
+      title: 'Editar canción',
+      error: null,
+      song
+    });
+  } catch (err) {
+    console.error('❌ Error al obtener la canción:', err.message);
+    res.redirect('/songs?error=' + encodeURIComponent('Error al cargar la canción.'));
+  }
+};
+
+exports.updateSong = async (req, res) => {
+  const { id } = req.params;
+  const { title, artist, album, genre, duration } = req.body;
+  const errors = validateSong({ title, artist });
+
+  if (errors.length > 0) {
+    return res.status(400).render('edit', {
+      title: 'Editar canción',
+      error: errors.join(' '),
+      song: { id, title, artist, album, genre, duration }
+    });
+  }
+
+  try {
+    const changes = await songModel.updateSong(id, { title, artist, album, genre, duration });
+
+    if (changes === 0) {
+      return res.redirect('/songs?error=' + encodeURIComponent('No se encontró la canción a actualizar.'));
+    }
+
+    res.redirect('/songs?success=' + encodeURIComponent('Canción actualizada correctamente.'));
+  } catch (err) {
+    console.error('❌ Error al actualizar la canción:', err.message);
+    res.status(500).render('edit', {
+      title: 'Editar canción',
+      error: 'Ocurrió un error al actualizar la canción. Intenta nuevamente.',
+      song: { id, title, artist, album, genre, duration }
+    });
+  }
+};
+
 exports.searchSongs = async (req, res) => {
   const query = (req.query.q || '').trim();
 
@@ -109,7 +161,6 @@ exports.searchSongs = async (req, res) => {
   }
 };
 
-
 exports.favoriteSongs = async (req, res) => {
   try {
     const songs = await songModel.getFavoriteSongs();
@@ -124,7 +175,6 @@ exports.favoriteSongs = async (req, res) => {
     res.status(500).send('Error interno del servidor al obtener favoritas.');
   }
 };
-
 
 exports.toggleFavorite = async (req, res) => {
   const { id } = req.params;
@@ -143,4 +193,3 @@ exports.toggleFavorite = async (req, res) => {
     res.redirect('/songs?error=' + encodeURIComponent('Ocurrió un error al actualizar el favorito.'));
   }
 };
-
