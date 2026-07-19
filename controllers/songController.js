@@ -18,6 +18,42 @@ function validateSong(data) {
   return errors;
 }
 
+async function renderIndexWithSongs(res, {
+  songs = null,
+  success = null,
+  error = null,
+  searchQuery = '',
+  onlyFavorites = false
+} = {}) {
+  try {
+    const stats = await songModel.getStats();
+    const list = songs !== null ? songs : await songModel.getAllSongs();
+
+    res.render('index', {
+      title: 'Music Library',
+      songs: list,
+      stats,
+      success,
+      error,
+      searchQuery,
+      onlyFavorites
+    });
+  } catch (err) {
+    console.error('❌ Error al renderizar el listado:', err.message);
+    res.status(500).send('Error interno del servidor al cargar las canciones.');
+  }
+}
+
+exports.home = (req, res) => {
+  res.redirect('/songs');
+};
+
+exports.listSongs = async (req, res) => {
+  await renderIndexWithSongs(res, {
+    success: req.query.success || null,
+    error: req.query.error || null
+  });
+};origin/qa
 
 exports.newSongForm = (req, res) => {
   res.render('create', {
@@ -51,3 +87,4 @@ exports.createSong = async (req, res) => {
     });
   }
 };
+
