@@ -41,6 +41,33 @@ function initDatabase() {
   });
 }
 
+/**
+ * @returns {Promise<Array>}
+ */
+function getAllSongs() {
+  return new Promise((resolve, reject) => {
+    const sql = `SELECT * FROM songs ORDER BY created_at DESC`;
+    db.all(sql, [], (err, rows) => {
+      if (err) return reject(err);
+      resolve(rows);
+    });
+  });
+}
+
+/**
+ * Obtiene una canción por su ID.
+ * @param {number} id
+ * @returns {Promise<Object|undefined>}
+ */
+function getSongById(id) {
+  return new Promise((resolve, reject) => {
+    const sql = `SELECT * FROM songs WHERE id = ?`;
+    db.get(sql, [id], (err, row) => {
+      if (err) return reject(err);
+      resolve(row);
+    });
+  });
+}
 
 /**
  * Inserta una nueva canción en la base de datos.
@@ -69,7 +96,36 @@ function createSong(song) {
 }
 
 
+/**
+ * Calcula estadísticas generales de la biblioteca musical.
+ * @returns {Promise<{total: number, artists: number, albums: number, favorites: number}>}
+ */
+function getStats() {
+  return new Promise((resolve, reject) => {
+    const sql = `
+      SELECT
+        COUNT(*) AS total,
+        COUNT(DISTINCT artist) AS artists,
+        COUNT(DISTINCT CASE WHEN album IS NOT NULL AND album != '' THEN album END) AS albums,
+        SUM(CASE WHEN favorite = 1 THEN 1 ELSE 0 END) AS favorites
+      FROM songs
+    `;
+    db.get(sql, [], (err, row) => {
+      if (err) return reject(err);
+      resolve({
+        total: row.total || 0,
+        artists: row.artists || 0,
+        albums: row.albums || 0,
+        favorites: row.favorites || 0
+      });
+    });
+  });
+}
+
 module.exports = {
   initDatabase,
+  getAllSongs,
+  getSongById,
   createSong,
+  getStats
 };
