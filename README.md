@@ -145,4 +145,4 @@ Este proyecto fue desarrollado como práctica para aplicar conceptos de:
 
 **Mario Suero**
 
-Desarrollado como práctica académica para la asignatura de Ingeniería de Software.
+Desarrollado como práctica académica para la asignatura de Programacion III.
